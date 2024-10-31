@@ -5,6 +5,7 @@ import org.example.expert.domain.comment.dto.response.CommentSaveResponse;
 import org.example.expert.domain.comment.entity.Comment;
 import org.example.expert.domain.comment.repository.CommentRepository;
 import org.example.expert.domain.common.dto.AuthUser;
+import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.common.exception.ServerException;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
@@ -40,15 +41,14 @@ class CommentServiceTest {
         CommentSaveRequest request = new CommentSaveRequest("contents");
         AuthUser authUser = new AuthUser(1L, "email", UserRole.USER);
 
-        given(todoRepository.findById(anyLong())).willReturn(Optional.empty());
+        // 할 일이 존재하지 않는 상황을 설정
+        given(todoRepository.findById(todoId)).willReturn(Optional.empty());
 
-        // when
-        ServerException exception = assertThrows(ServerException.class, () -> {
+        // when & then
+        InvalidRequestException exception = assertThrows(InvalidRequestException.class, () -> {
             commentService.saveComment(authUser, todoId, request);
         });
-
-        // then
-        assertEquals("Todo not found", exception.getMessage());
+        assertEquals("Todo not found", exception.getMessage());  // 에러 메시지 확인
     }
 
     @Test
